@@ -8,7 +8,7 @@ const router = express.Router()
 // Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: function (_req, _file, cb) {
-    cb(null, "uploads/")
+    cb(null, "public/uploads/")
   },
   filename: function (_req, file, cb) {
     const ext = path.extname(file.originalname)
@@ -23,21 +23,6 @@ const upload = multer({ storage })
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const {
-      id,
-      title,
-      price,
-      stock,
-      category,
-      description,
-      brand,
-      size,
-      details
-    } = req.body
-
-    const image = req.file?.filename || ""
-
-    const newProduct = new Product({
-      _id: id,
       title,
       price,
       stock,
@@ -46,6 +31,21 @@ router.post("/", upload.single("image"), async (req, res) => {
       brand,
       size,
       details,
+      shopkeeperId
+    } = req.body
+
+    const image = req.file?.filename || ""
+
+    const newProduct = new Product({
+      title,
+      price,
+      stock,
+      category,
+      description,
+      brand,
+      size,
+      details,
+      shopkeeperId,
       image
     })
 
@@ -56,6 +56,18 @@ router.post("/", upload.single("image"), async (req, res) => {
     res.status(500).json({ message: "Product creation failed" })
   }
 })
+
+// GET /api/products - Get all products
+router.get("/", async (_req, res) => {
+  try {
+    const products = await Product.find().sort({ createdAt: -1 })
+    res.json(products)
+  } catch (error) {
+    console.error("❌ Failed to fetch products:", error)
+    res.status(500).json({ message: "Failed to fetch products" })
+  }
+})
+
 
 export default router
   
